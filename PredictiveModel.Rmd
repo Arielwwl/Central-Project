@@ -1,0 +1,10 @@
+```{r}
+central <- read.csv("Central2024P.csv", stringsAsFactors = TRUE)
+View(central)
+attach(central)
+
+# Using least squares method
+lm1 <- lm(Price~., central)
+summary(lm1)
+```
+
