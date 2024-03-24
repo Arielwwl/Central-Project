@@ -3,12 +3,19 @@ set.seed(9876)
 central <- read.csv("Central2024P.csv", stringsAsFactors = TRUE)
 attach(central)
 
-# Using simple linear regression
+###########################
+# Simple linear regression
+###########################
 lm1 <- lm(Price~., central)
 summary(lm1)
-# Adjusted R-square is 0.8391
+lm2 <- lm(Price~.+Area*Age, central)
+summary(lm2)
+lm3 <- lm(Price~.+Area*Age*Tenure*Purchaser, central)
+summary(lm3)
 
-# Using best subset selection
+########################
+# Best subset selection
+########################
 library(leaps)
 reg1 <- regsubsets(Price~., central, nvmax = 18)
 reg1sum <- summary(reg1)
@@ -27,7 +34,9 @@ coef(reg1, cp)
 # Model with highest R-squared.
 coef(reg1, rsq)
 
-# Using cross validation approach on best subset selection (10-fold).
+####################################################
+# 10-fold cross validation on best subset selection
+####################################################
 predict.regsubsets <- function(object, newdata,id){
   form <- as.formula(object$call[[2]])
   mat <- model.matrix(form, newdata)
@@ -51,10 +60,13 @@ smallmeancv <- which.min(meancv)
 # Model with lowest mean cv error.
 coef(reg1, smallmeancv)
 
-# Using cross validation on ridge regression with 83% of the data as training set.
+#######################################
+# Cross validation on ridge regression
+#######################################
 library(glmnet)
 x <- model.matrix(Price~., central)[, -1]
 y <- central$Price
+# 83% of data as training set.
 train <- sample(1:nrow(central), nrow(central)/1.2)
 test <- (-train)
 centraltrain <- central[train,]
@@ -76,7 +88,9 @@ rrmodel <- predict(outrr, type = "coefficients", s = lambdarr)[1:19,]
 # Ridge regression model
 rrmodel[rrmodel!=0]
 
-# Using cross validation on the lasso.
+################################
+# Cross validation on the lasso
+################################
 lassomod <- glmnet(trainx, trainy, alpha = 1)
 cvout1 <- cv.glmnet(trainx, trainy, alpha = 1)
 lambdalasso <- cvout1$lambda.min
@@ -89,7 +103,6 @@ outlr <- glmnet(x, y, alpha = 1)
 lrmodel <- predict(outlr, type = "coefficients", s = lambdalasso)[1:19,]
 # The lasso model
 lrmodel[lrmodel!=0]
-
-# We would take the lasso over ridge regression model as it has the lower test error.
 ```
+
 
