@@ -19,7 +19,7 @@ coef(reg1, cp)
 # Model with highest R-squared.
 coef(reg1, rsq)
 
-# Using cross validation approach on best subset selection (10-fold)
+# Using cross validation approach on best subset selection (10-fold).
 predict.regsubsets <- function(object, newdata,id){
   form <- as.formula(object$call[[2]])
   mat <- model.matrix(form, newdata)
@@ -42,11 +42,11 @@ smallmeancv <- which.min(meancv)
 # Model with lowest mean cv error.
 coef(reg1, smallmeancv)
 
-# Using ridge regression with half the data as training set
+# Using cross validation on ridge regression with 83% of the data as training set.
 library(glmnet)
 x <- model.matrix(Price~., central)[, -1]
 y <- central$Price
-train <- sample(1:nrow(central), nrow(central)/2)
+train <- sample(1:nrow(central), nrow(central)/1.2)
 test <- (-train)
 centraltrain <- central[train,]
 centraltest <- central[test,]
@@ -58,5 +58,21 @@ ridgemod <- glmnet(trainx, trainy, alpha = 0)
 cvout <- cv.glmnet(trainx, trainy, alpha = 0)
 lambdarr <- cvout$lambda.min
 lambdarr
+# We get 154237.4 as the smallest lambda.
+ridgepred <- predict(ridgemod, s = lambdarr, newx = x[test,])
+mean((ridgepred-testy)^2)
+# Test error is 675038115693.
+outrr <- glmnet(x, y, alpha = 0)
+rrmodel <- predict(outrr, type = "coefficients", s = lambdarr)[1:19,]
+# Ridge regression model
+rrmodel[rrmodel!=0]
+
+# Using cross validation on lasso.
+lassomod <- glmnet(trainx, trainy, alpha = 1)
+cvout1 <- cv.glmnet(trainx, trainy, alpha = 1)
+lambdalasso <- cvout1$lambda.min
+lambdalasso
+# We get 4392.738 as the smallest lambda.
+
 ```
 
