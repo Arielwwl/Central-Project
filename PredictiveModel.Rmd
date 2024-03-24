@@ -1,10 +1,21 @@
 ```{r}
+set.seed(9876)
 central <- read.csv("Central2024P.csv", stringsAsFactors = TRUE)
 View(central)
 attach(central)
 
-# Using least squares method
-lm1 <- lm(Price~., central)
-summary(lm1)
+# Using best subset selection
+library(leaps)
+reg1 <- regsubsets(Price~., central, nvmax = 18)
+reg1sum <- summary(reg1)
+reg1sum
+# Comparing BIC, Cp, and adjusted R-square
+bic <- which.min(reg1sum$bic)
+cp <- which.min(reg1sum$cp)
+rsq <- which.max(reg1sum$adjr2)
+# One model with BIC, another model from Cp and adjr
+coef(reg1, bic)
+coef(reg1, cp)
+coef(reg1, rsq)
 ```
 
