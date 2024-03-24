@@ -13,9 +13,31 @@ reg1sum
 bic <- which.min(reg1sum$bic)
 cp <- which.min(reg1sum$cp)
 rsq <- which.max(reg1sum$adjr2)
-# One model with BIC, another model from Cp and adjr
+# One model with BIC as criteria, another model from Cp and adjr criteria
 coef(reg1, bic)
 coef(reg1, cp)
 coef(reg1, rsq)
+
+# Using cross validation approach (10-fold)
+predict.regsubsets <- function(object, newdata,id){
+  form <- as.formula(object$call[[2]])
+  mat <- model.matrix(form, newdata)
+  coefi <- coef(object, id = id)
+  xvars <- names(coefi)
+  mat[, xvars]%*%coefi
+}
+k <- 10
+folds <- sample(1:k, nrow(central), replace = TRUE)
+cverrors <- matrix(NA, k, 18, dimnames = list(NULL, paste(1:18)))
+for (j in 1:k) {
+  best.fit <- regsubsets(Price~., data = central[folds!=j,], nvmax = 18)
+  for (i in 1:18) {
+    pred <- predict.regsubsets(best.fit, central[folds==j,], id = i)
+    cverrors[j, i] <- mean((central$Price[folds==j]-pred)^2)
+  }
+}
+meancv <- apply(cverrors, 2, mean)
+smallmeancv <- which.min(meancv)
+coef(reg1, smallmeancv)
 ```
 
