@@ -1,7 +1,6 @@
 ```{r}
 set.seed(9876)
 central <- read.csv("Central2024P.csv", stringsAsFactors = TRUE)
-View(central)
 attach(central)
 
 # Using best subset selection
@@ -13,12 +12,14 @@ reg1sum
 bic <- which.min(reg1sum$bic)
 cp <- which.min(reg1sum$cp)
 rsq <- which.max(reg1sum$adjr2)
-# One model with BIC as criteria, another model from Cp and adjr criteria
+# Model with lowest BIC
 coef(reg1, bic)
+# Model with lowest Cp
 coef(reg1, cp)
+# Model with highest R-squared.
 coef(reg1, rsq)
 
-# Using cross validation approach (10-fold)
+# Using cross validation approach on best subset selection (10-fold)
 predict.regsubsets <- function(object, newdata,id){
   form <- as.formula(object$call[[2]])
   mat <- model.matrix(form, newdata)
@@ -38,6 +39,24 @@ for (j in 1:k) {
 }
 meancv <- apply(cverrors, 2, mean)
 smallmeancv <- which.min(meancv)
+# Model with lowest mean cv error.
 coef(reg1, smallmeancv)
+
+# Using ridge regression with half the data as training set
+library(glmnet)
+x <- model.matrix(Price~., central)[, -1]
+y <- central$Price
+train <- sample(1:nrow(central), nrow(central)/2)
+test <- (-train)
+centraltrain <- central[train,]
+centraltest <- central[test,]
+trainx <- model.matrix(Price~., centraltrain)[, -1]
+trainy <- centraltrain$Price
+testx <- model.matrix(Price~., centraltest)[, -1]
+testy <- centraltest$Price
+ridgemod <- glmnet(trainx, trainy, alpha = 0)
+cvout <- cv.glmnet(trainx, trainy, alpha = 0)
+lambdarr <- cvout$lambda.min
+lambdarr
 ```
 
