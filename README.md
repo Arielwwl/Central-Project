@@ -7,4 +7,4 @@ Area: Size of the condominium unit in square feet
 Age: Age of condominium unit
 Tenure: Freehold or Leasehold
 Purchaser: HDB or Private
-Region: 15 different regions in the Central District
+Region: 15 different regions in the Central District.
