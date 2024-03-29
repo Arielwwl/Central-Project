@@ -2,6 +2,9 @@
 set.seed(9876)
 central <- read.csv("Central2024P.csv", stringsAsFactors = TRUE)
 attach(central)
+View(central)
+# Scale the price 
+central[,1] <- scale(central[,1])
 
 ###########################
 # Simple linear regression
@@ -56,6 +59,7 @@ for (j in 1:k) {
 }
 meancv <- apply(cverrors, 2, mean)
 min(meancv)
+# Cv error is 0.160995.
 smallmeancv <- which.min(meancv)
 # Model with lowest mean cv error.
 coef(reg1, smallmeancv)
@@ -66,8 +70,8 @@ coef(reg1, smallmeancv)
 library(glmnet)
 x <- model.matrix(Price~., central)[, -1]
 y <- central$Price
-# 83% of data as training set.
-train <- sample(1:nrow(central), nrow(central)/1.2)
+# 80% of data as training set.
+train <- sample(1:nrow(central), 2000)
 test <- (-train)
 centraltrain <- central[train,]
 centraltest <- central[test,]
@@ -79,10 +83,10 @@ ridgemod <- glmnet(trainx, trainy, alpha = 0)
 cvout <- cv.glmnet(trainx, trainy, alpha = 0)
 lambdarr <- cvout$lambda.min
 lambdarr
-# We get 154237.4 as the smallest lambda.
+# We get 0.08778 as the smallest lambda.
 ridgepred <- predict(ridgemod, s = lambdarr, newx = x[test,])
 mean((ridgepred-testy)^2)
-# Test error is 675038115693.
+# Test error is 0.1871745.
 outrr <- glmnet(x, y, alpha = 0)
 rrmodel <- predict(outrr, type = "coefficients", s = lambdarr)[1:19,]
 # Ridge regression model
@@ -95,14 +99,23 @@ lassomod <- glmnet(trainx, trainy, alpha = 1)
 cvout1 <- cv.glmnet(trainx, trainy, alpha = 1)
 lambdalasso <- cvout1$lambda.min
 lambdalasso
-# We get 4392.738 as the smallest lambda.
+# We get 0.001431 as the smallest lambda.
 lassopred <- predict(lassomod, s = lambdalasso, newx = x[test,])
 mean((lassopred-testy)^2)
-# Test error is 666171306659.
+# Test error is 0.1864114.
 outlr <- glmnet(x, y, alpha = 1)
 lrmodel <- predict(outlr, type = "coefficients", s = lambdalasso)[1:19,]
 # The lasso model
 lrmodel[lrmodel!=0]
+
+################
+# Decision Tree
+################
+library(tree)
+tree1 <- tree(Price~., central, subset = train)
+summary(tree1)
+plot(tree1)
+text(tree1, pretty = 0)
 ```
 
 
