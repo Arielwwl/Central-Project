@@ -2,19 +2,17 @@
 set.seed(9876)
 central <- read.csv("Central2024P.csv", stringsAsFactors = TRUE)
 attach(central)
-View(central)
-# Scale the price 
-central[,1] <- scale(central[,1])
+# Separating dataset into training and testing data
+train <- sample(1:nrow(central), 2000)
+test <- (-train)
 
 ###########################
-# Simple linear regression
+# Multiple linear regression
 ###########################
-lm1 <- lm(Price~., central)
-summary(lm1)
-lm2 <- lm(Price~.+Area*Age, central)
-summary(lm2)
-lm3 <- lm(Price~.+Area*Age*Tenure*Purchaser, central)
-summary(lm3)
+L3 <- lm(Price~Area*Tenure+Region+Age+Purchaser, central[train,])
+summary(L3)
+pred3 <- predict(L3, newdata=central[test,])
+mean((pred3-central[test, "Price"])^2)
 
 ########################
 # Best subset selection
@@ -70,9 +68,6 @@ coef(reg1, smallmeancv)
 library(glmnet)
 x <- model.matrix(Price~., central)[, -1]
 y <- central$Price
-# 80% of data as training set.
-train <- sample(1:nrow(central), 2000)
-test <- (-train)
 centraltrain <- central[train,]
 centraltest <- central[test,]
 trainx <- model.matrix(Price~., centraltrain)[, -1]
@@ -83,30 +78,47 @@ ridgemod <- glmnet(trainx, trainy, alpha = 0)
 cvout <- cv.glmnet(trainx, trainy, alpha = 0)
 lambdarr <- cvout$lambda.min
 lambdarr
-# We get 0.08778 as the smallest lambda.
+
+# Calculating test error
 ridgepred <- predict(ridgemod, s = lambdarr, newx = x[test,])
 mean((ridgepred-testy)^2)
-# Test error is 0.1871745.
+
+# Ridge regression model
 outrr <- glmnet(x, y, alpha = 0)
 rrmodel <- predict(outrr, type = "coefficients", s = lambdarr)[1:19,]
-# Ridge regression model
 rrmodel[rrmodel!=0]
 
 ################################
 # Cross validation on the lasso
 ################################
+# Finding best lambda based on cross validation
 lassomod <- glmnet(trainx, trainy, alpha = 1)
 cvout1 <- cv.glmnet(trainx, trainy, alpha = 1)
 lambdalasso <- cvout1$lambda.min
 lambdalasso
-# We get 0.001431 as the smallest lambda.
+
+# Test error
 lassopred <- predict(lassomod, s = lambdalasso, newx = x[test,])
 mean((lassopred-testy)^2)
-# Test error is 0.1864114.
+
+# The lasso model
 outlr <- glmnet(x, y, alpha = 1)
 lrmodel <- predict(outlr, type = "coefficients", s = lambdalasso)[1:19,]
-# The lasso model
 lrmodel[lrmodel!=0]
+
+########################
+# Elastic Net Regression
+########################
+set.seed(9876)
+enmod <- glmnet(trainx, trainy, alpha = 0.25)
+cvout2 <- cv.glmnet(trainx, trainy, alpha = 0.25)
+lambdaen <- cvout2$lambda.min
+lambdaen
+enpred <- predict(enmod, s = lambdaen, newx = x[test,])
+mean((enpred-testy)^2)
+outer <- glmnet(x, y, alpha = 0.25)
+enmodel <- predict(outer, type = "coefficients", s = lambdaen)[1:19,]
+enmodel[enmodel!=0]
 
 ################
 # Decision Tree
@@ -114,8 +126,22 @@ lrmodel[lrmodel!=0]
 library(tree)
 tree1 <- tree(Price~., central, subset = train)
 summary(tree1)
+# Plot of initial decision tree
 plot(tree1)
+title("Regression tree for central data")
 text(tree1, pretty = 0)
+
+# Finding minimum nodes through cross validation
+cvtree <- cv.tree(tree1)
+plot(cvtree$size, cvtree$dev, type = "b", main = "Cross validation: Deviance vs Size", xlab = "Number of nodes", ylab = "Deviance")
+minnodes <- cvtree$size[which.min(cvtree$dev)]
+
+# Pruning the decision tree
+prunetree <- prune.tree(tree1, best = minnodes)
+plot(prunetree)
+title("Pruned Regression Tree for central data")
+text(prunetree, pretty = 0)
+
 ```
 
 
