@@ -284,6 +284,8 @@ print(importance)
 varImpPlot(rf_model)
 ```
 
+# Across all the models above, random forest gives the smallest mean squared error, and is our best predictive model.
+
 
 
 
