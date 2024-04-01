@@ -1,0 +1,45 @@
+```{r}
+x <- read.csv("Central2024P.csv", stringsAsFactors = TRUE)
+library(tree)
+set.seed(9876)
+train <- sample(1:nrow(x),2000)
+test <- -train
+
+#Attempting random forest
+library(randomForest)
+predictor_variables <- names(x)[-which(names(x) == "Price")]
+target_variable <- "Price"
+
+# Train the Random Forest model using only the training data
+rf_model <- randomForest(
+  formula = as.formula(paste(target_variable, "~ .")),
+  data = x[train,],  # Use only the training data
+  ntree = 550,  # Number of trees in the forest
+  mtry = 4,  # Number of variables randomly sampled as candidates at each split
+  importance = TRUE  # Calculate variable importance
+)
+
+# Print the model summary
+print(rf_model)
+
+# Predict on the test data
+predictions <- predict(rf_model, newdata = x[test,])
+
+# Calculate Mean Squared Error
+mse <- mean((predictions - x[test,]$Price)^2)
+print(paste("Mean Squared Error:", mse))
+
+# Get variable importance measures
+importance <- importance(rf_model)
+print(importance)
+
+# Plot variable importance
+varImpPlot(rf_model)
+
+centraltest <- read.csv("Central2024testP.csv", stringsAsFactors = TRUE)
+predictions2 <- predict(rf_model, newdata = centraltest)
+mse2 <- mean((predictions2 - centraltest$Price)^2)
+print(paste("Mean Squared Error:", mse2))
+# Using our best model which was the random forest on new test data "Central2024testP", we get an MSE of 354704572800921.
+```
+
