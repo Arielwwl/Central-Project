@@ -106,20 +106,6 @@ outlr <- glmnet(x, y, alpha = 1)
 lrmodel <- predict(outlr, type = "coefficients", s = lambdalasso)[1:19,]
 lrmodel[lrmodel!=0]
 
-########################
-# Elastic Net Regression
-########################
-set.seed(9876)
-enmod <- glmnet(trainx, trainy, alpha = 0.25)
-cvout2 <- cv.glmnet(trainx, trainy, alpha = 0.25)
-lambdaen <- cvout2$lambda.min
-lambdaen
-enpred <- predict(enmod, s = lambdaen, newx = x[test,])
-mean((enpred-testy)^2)
-outer <- glmnet(x, y, alpha = 0.25)
-enmodel <- predict(outer, type = "coefficients", s = lambdaen)[1:19,]
-enmodel[enmodel!=0]
-
 ################
 # Decision Tree
 ################
@@ -141,7 +127,6 @@ prunetree <- prune.tree(tree1, best = minnodes)
 plot(prunetree)
 title("Pruned Regression Tree for central data")
 text(prunetree, pretty = 0)
-
 ```
 
 
