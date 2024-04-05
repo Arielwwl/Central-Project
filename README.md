@@ -10,3 +10,14 @@ Purchaser: HDB or Private
 Region: 15 different regions in the Central District.
 
 Dataset Central2024testP.csv consists of remaining test data. We are required to apply our predictive model on this test data set and determine the mean squared error.
+
+# Files
+Data sets - Central2024P.csv | Central2024testP.csv
+
+Self written code - PredictiveModel.Rmd
+
+Group's code - ConsolidatedModels.Rmd
+
+Code for applying test data - TestData.Rmd
+
+Report on project - DSA_211_Group1_Report.pdf
