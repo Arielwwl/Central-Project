@@ -8,3 +8,5 @@ Age: Age of condominium unit
 Tenure: Freehold or Leasehold
 Purchaser: HDB or Private
 Region: 15 different regions in the Central District.
+
+Dataset Central2024testP.csv consists of remaining test data. We are required to apply our predictive model on this test data set and determine the mean squared error.
