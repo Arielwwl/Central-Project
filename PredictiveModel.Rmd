@@ -1,4 +1,4 @@
-```{r}
+```{r} 
 set.seed(9876)
 central <- read.csv("Central2024P.csv", stringsAsFactors = TRUE)
 attach(central)
