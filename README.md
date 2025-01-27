@@ -1,4 +1,4 @@
-# PredictiveModel
+# Central Predictive Model
 DSA211 Statistical Learning with R Group Project.
 Dataset Central2024P.csv records the information of 2500 private property resale transactions in the Central District of Singapore during 2023 (from REALIS database).
 We are required to construct a predictive model to predict the price of private property, Price, with five independent variables: Area, Age, Tenure, Purchaser and Region.
